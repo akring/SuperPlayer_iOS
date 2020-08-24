@@ -24,7 +24,7 @@ const NSString *kPlayCGIHostname = @"playvideo.qcloud.com";
 }
 
 - (void)dealloc {
-    [_sessionManager invalidateSessionCancelingTasks:YES resetSession:YES];
+//    [_sessionManager invalidateSessionCancelingTasks:YES resetSession:YES];
 }
 
 - (NSString *)playingDefinitionUrl
@@ -91,49 +91,47 @@ const NSString *kPlayCGIHostname = @"playvideo.qcloud.com";
     __weak SuperPlayerModel *weakSelf = self;
     return [manager GET:url
              parameters:params
-                headers:nil
                progress:nil
                 success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         __strong SuperPlayerModel *self = weakSelf;
-#if DEBUG
-        NSLog(@"%@", responseObject);
-#endif
-        NSInteger code = [responseObject[@"code"] integerValue];
-        if (code != 0) {
-            NSString *msg = responseObject[@"message"];
-            NSString *requestID = responseObject[@"requestId"];
-            NSString *warning = responseObject[@"warning"];
-            NSError *error = [NSError errorWithDomain:@"SuperPlayerCGI"
-                                                 code:code
-                                             userInfo:@{NSLocalizedDescriptionKey: msg,
-                                                        @"requestID": requestID ?: @"",
-                                                        @"warning": warning ?: @""
-                                             }];
-            if (completion) {
-                completion(error, self);
-                return;
-            }
-            return;
-        }
-        
-        NSInteger responseVersion = [responseObject[@"version"] integerValue];
-        if (responseVersion == 0) {
-            responseVersion = 2;
-        }
-        Class<SPPlayCGIParserProtocol> parser = [SPPlayCGIParser parserOfVersion:responseVersion];
-        SPPlayCGIParseResult *result = [parser parseResponse:responseObject];
-        
-        self.videoURL = result.url;
-        self.multiVideoURLs = result.multiVideoURLs;
-        self.keyFrameDescList = result.keyFrameDescList;
-        self.imageSprite = result.imageSprite;
-        if (responseVersion == 4) {
-            self.originalDuration = result.originalDuration;
-        }
-        if (completion) {
-            completion(nil, self);
-        }
-        
+        #if DEBUG
+                NSLog(@"%@", responseObject);
+        #endif
+                NSInteger code = [responseObject[@"code"] integerValue];
+                if (code != 0) {
+                    NSString *msg = responseObject[@"message"];
+                    NSString *requestID = responseObject[@"requestId"];
+                    NSString *warning = responseObject[@"warning"];
+                    NSError *error = [NSError errorWithDomain:@"SuperPlayerCGI"
+                                                         code:code
+                                                     userInfo:@{NSLocalizedDescriptionKey: msg,
+                                                                @"requestID": requestID ?: @"",
+                                                                @"warning": warning ?: @""
+                                                     }];
+                    if (completion) {
+                        completion(error, self);
+                        return;
+                    }
+                    return;
+                }
+                
+                NSInteger responseVersion = [responseObject[@"version"] integerValue];
+                if (responseVersion == 0) {
+                    responseVersion = 2;
+                }
+                Class<SPPlayCGIParserProtocol> parser = [SPPlayCGIParser parserOfVersion:responseVersion];
+                SPPlayCGIParseResult *result = [parser parseResponse:responseObject];
+                
+                self.videoURL = result.url;
+                self.multiVideoURLs = result.multiVideoURLs;
+                self.keyFrameDescList = result.keyFrameDescList;
+                self.imageSprite = result.imageSprite;
+                if (responseVersion == 4) {
+                    self.originalDuration = result.originalDuration;
+                }
+                if (completion) {
+                    completion(nil, self);
+                }
     } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
         if (error.code != NSURLErrorCancelled) {
             if (completion) {

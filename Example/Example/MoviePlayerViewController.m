@@ -82,7 +82,7 @@ __weak UITextField *urlField;
 
 - (void)dealloc {
     NSLog(@"%@释放了",self.class);
-    [_manager invalidateSessionCancelingTasks:YES resetSession:YES];
+    [_manager invalidateSessionCancelingTasks:YES];
 }
 
 - (void)willMoveToParentViewController:(nullable UIViewController *)parent
@@ -346,7 +346,6 @@ __weak UITextField *urlField;
     __weak __typeof(self) weakSelf = self;
     [manager GET:@"http://xzb.qcloud.com/get_live_list"
       parameters:nil
-         headers:nil
         progress:nil
          success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         __strong __typeof(weakSelf) self = weakSelf;
